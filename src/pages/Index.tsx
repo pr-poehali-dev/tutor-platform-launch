@@ -423,8 +423,8 @@ const Index = () => {
                 <CardTitle>Email</CardTitle>
               </CardHeader>
               <CardContent className="text-center">
-                <a href="mailto:info@tutorpro.ru" className="text-primary hover:underline text-lg">
-                  info@tutorpro.ru
+                <a href="mailto:idelia0814@icloud.com" className="text-primary hover:underline text-lg">
+                  idelia0814@icloud.com
                 </a>
               </CardContent>
             </Card>
@@ -451,8 +451,8 @@ const Index = () => {
                 <CardTitle>Telegram</CardTitle>
               </CardHeader>
               <CardContent className="text-center">
-                <a href="https://t.me/tutorpro" className="text-primary hover:underline text-lg">
-                  @tutorpro
+                <a href="https://t.me/lovylewq" className="text-primary hover:underline text-lg">
+                  @lovylewq
                 </a>
               </CardContent>
             </Card>
