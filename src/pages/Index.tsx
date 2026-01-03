@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
@@ -8,26 +8,64 @@ import { Label } from '@/components/ui/label';
 import Icon from '@/components/ui/icon';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
+import { createBooking, getTimeSlots } from '@/lib/api';
 
 const Index = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [bookingOpen, setBookingOpen] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '', phone: '' });
+  const [timeSlots, setTimeSlots] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const timeSlots = ['10:00', '11:00', '12:00', '14:00', '15:00', '16:00', '17:00', '18:00'];
+  useEffect(() => {
+    loadTimeSlots();
+  }, []);
 
-  const handleBooking = (e: React.FormEvent) => {
+  const loadTimeSlots = async () => {
+    try {
+      const slots = await getTimeSlots();
+      const availableSlots = slots.filter(s => s.available).map(s => s.time);
+      setTimeSlots(availableSlots);
+    } catch (error) {
+      console.error('Error loading time slots:', error);
+      setTimeSlots(['10:00', '11:00', '12:00', '14:00', '15:00', '16:00', '17:00', '18:00']);
+    }
+  };
+
+  const handleBooking = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!date || !selectedTime) {
       toast({ title: 'Ошибка', description: 'Выберите дату и время', variant: 'destructive' });
       return;
     }
-    toast({ 
-      title: 'Урок забронирован!', 
-      description: `${formData.name}, ждём вас ${date.toLocaleDateString()} в ${selectedTime}` 
-    });
-    setBookingOpen(false);
+
+    setIsLoading(true);
+    try {
+      await createBooking({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        date: date.toISOString().split('T')[0],
+        time: selectedTime
+      });
+      
+      toast({ 
+        title: 'Урок забронирован!', 
+        description: `${formData.name}, ждём вас ${date.toLocaleDateString()} в ${selectedTime}` 
+      });
+      setBookingOpen(false);
+      setFormData({ name: '', email: '', phone: '' });
+      setSelectedTime('');
+    } catch (error) {
+      toast({ 
+        title: 'Ошибка', 
+        description: 'Не удалось создать бронирование. Попробуйте позже.',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -146,9 +184,23 @@ const Index = () => {
                     </div>
                   </div>
 
-                  <Button type="submit" size="lg" className="w-full bg-gradient-to-r from-primary to-secondary">
-                    <Icon name="Check" className="mr-2" size={20} />
-                    Подтвердить бронирование
+                  <Button 
+                    type="submit" 
+                    size="lg" 
+                    className="w-full bg-gradient-to-r from-primary to-secondary"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <>
+                        <Icon name="Loader2" className="mr-2 animate-spin" size={20} />
+                        Бронирование...
+                      </>
+                    ) : (
+                      <>
+                        <Icon name="Check" className="mr-2" size={20} />
+                        Подтвердить бронирование
+                      </>
+                    )}
                   </Button>
                 </form>
               </DialogContent>
@@ -200,9 +252,24 @@ const Index = () => {
                   <span>Персональный план обучения</span>
                 </li>
               </ul>
-              <Button className="w-full mt-6 bg-gradient-to-r from-primary to-secondary" size="lg">
-                Записаться
-              </Button>
+              <div className="flex gap-2 mt-6">
+                <Button 
+                  className="flex-1 bg-gradient-to-r from-primary to-secondary" 
+                  size="lg"
+                  onClick={() => window.open('https://t.me/lovylewq', '_blank')}
+                >
+                  <Icon name="Send" className="mr-2" size={18} />
+                  Telegram
+                </Button>
+                <Button 
+                  className="flex-1 bg-gradient-to-r from-secondary to-accent" 
+                  size="lg"
+                  onClick={() => window.location.href = 'tel:+79274049162'}
+                >
+                  <Icon name="Phone" className="mr-2" size={18} />
+                  Позвонить
+                </Button>
+              </div>
             </CardContent>
           </Card>
 
@@ -243,9 +310,24 @@ const Index = () => {
                   <span>Материалы для обучения</span>
                 </li>
               </ul>
-              <Button className="w-full mt-6 bg-gradient-to-r from-primary to-secondary" size="lg">
-                Оформить подписку
-              </Button>
+              <div className="flex gap-2 mt-6">
+                <Button 
+                  className="flex-1 bg-gradient-to-r from-primary to-secondary" 
+                  size="lg"
+                  onClick={() => window.open('https://t.me/lovylewq', '_blank')}
+                >
+                  <Icon name="Send" className="mr-2" size={18} />
+                  Telegram
+                </Button>
+                <Button 
+                  className="flex-1 bg-gradient-to-r from-secondary to-accent" 
+                  size="lg"
+                  onClick={() => window.location.href = 'tel:+79274049162'}
+                >
+                  <Icon name="Phone" className="mr-2" size={18} />
+                  Позвонить
+                </Button>
+              </div>
             </CardContent>
           </Card>
 
@@ -282,9 +364,24 @@ const Index = () => {
                   <span>Приоритетная поддержка</span>
                 </li>
               </ul>
-              <Button className="w-full mt-6 bg-gradient-to-r from-accent to-orange-500" size="lg">
-                Связаться
-              </Button>
+              <div className="flex gap-2 mt-6">
+                <Button 
+                  className="flex-1 bg-gradient-to-r from-accent to-orange-500" 
+                  size="lg"
+                  onClick={() => window.open('https://t.me/lovylewq', '_blank')}
+                >
+                  <Icon name="Send" className="mr-2" size={18} />
+                  Telegram
+                </Button>
+                <Button 
+                  className="flex-1 bg-gradient-to-r from-orange-500 to-red-500" 
+                  size="lg"
+                  onClick={() => window.location.href = 'tel:+79274049162'}
+                >
+                  <Icon name="Phone" className="mr-2" size={18} />
+                  Позвонить
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>

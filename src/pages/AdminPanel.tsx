@@ -9,9 +9,10 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import Icon from '@/components/ui/icon';
 import { toast } from '@/hooks/use-toast';
+import { getBookings, updateBookingStatus, getTimeSlots, updateTimeSlot, type Booking as ApiBooking, type TimeSlot as ApiTimeSlot } from '@/lib/api';
 
 interface Booking {
-  id: string;
+  id: number;
   name: string;
   email: string;
   phone: string;
@@ -28,44 +29,57 @@ interface TimeSlot {
 const AdminPanel = () => {
   const navigate = useNavigate();
   const [date, setDate] = useState<Date | undefined>(new Date());
-  const [bookings, setBookings] = useState<Booking[]>([
-    {
-      id: '1',
-      name: 'Анна Иванова',
-      email: 'anna@example.com',
-      phone: '+7 (999) 123-45-67',
-      date: new Date(),
-      time: '14:00',
-      status: 'pending'
-    },
-    {
-      id: '2',
-      name: 'Петр Сидоров',
-      email: 'petr@example.com',
-      phone: '+7 (999) 234-56-78',
-      date: new Date(),
-      time: '16:00',
-      status: 'confirmed'
-    }
-  ]);
-
-  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([
-    { time: '10:00', available: true },
-    { time: '11:00', available: true },
-    { time: '12:00', available: false },
-    { time: '14:00', available: true },
-    { time: '15:00', available: true },
-    { time: '16:00', available: true },
-    { time: '17:00', available: false },
-    { time: '18:00', available: true }
-  ]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const isAuth = localStorage.getItem('tutorAuth');
     if (!isAuth) {
       navigate('/admin/login');
+      return;
     }
+    loadData();
   }, [navigate]);
+
+  useEffect(() => {
+    if (date) {
+      loadBookingsForDate();
+    }
+  }, [date]);
+
+  const loadData = async () => {
+    setIsLoading(true);
+    try {
+      const [slotsData] = await Promise.all([
+        getTimeSlots()
+      ]);
+      setTimeSlots(slotsData.map(s => ({ time: s.time, available: s.available })));
+    } catch (error) {
+      console.error('Error loading data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loadBookingsForDate = async () => {
+    if (!date) return;
+    try {
+      const dateStr = date.toISOString().split('T')[0];
+      const bookingsData = await getBookings(dateStr);
+      setBookings(bookingsData.map(b => ({
+        id: b.id!,
+        name: b.name,
+        email: b.email,
+        phone: b.phone,
+        date: new Date(b.date),
+        time: b.time,
+        status: b.status || 'pending'
+      })));
+    } catch (error) {
+      console.error('Error loading bookings:', error);
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('tutorAuth');
@@ -73,19 +87,40 @@ const AdminPanel = () => {
     navigate('/');
   };
 
-  const updateBookingStatus = (id: string, status: 'confirmed' | 'cancelled') => {
-    setBookings(bookings.map(b => b.id === id ? { ...b, status } : b));
-    toast({ 
-      title: 'Статус обновлен', 
-      description: status === 'confirmed' ? 'Запись подтверждена' : 'Запись отменена'
-    });
+  const handleUpdateBookingStatus = async (id: number, status: 'confirmed' | 'cancelled') => {
+    try {
+      await updateBookingStatus(id, status);
+      setBookings(bookings.map(b => b.id === id ? { ...b, status } : b));
+      toast({ 
+        title: 'Статус обновлен', 
+        description: status === 'confirmed' ? 'Запись подтверждена' : 'Запись отменена'
+      });
+    } catch (error) {
+      toast({ 
+        title: 'Ошибка', 
+        description: 'Не удалось обновить статус',
+        variant: 'destructive'
+      });
+    }
   };
 
-  const toggleTimeSlot = (time: string) => {
-    setTimeSlots(timeSlots.map(slot => 
-      slot.time === time ? { ...slot, available: !slot.available } : slot
-    ));
-    toast({ title: 'Расписание обновлено' });
+  const toggleTimeSlot = async (time: string) => {
+    const slot = timeSlots.find(s => s.time === time);
+    if (!slot) return;
+
+    try {
+      await updateTimeSlot(time, !slot.available);
+      setTimeSlots(timeSlots.map(s => 
+        s.time === time ? { ...s, available: !s.available } : s
+      ));
+      toast({ title: 'Расписание обновлено' });
+    } catch (error) {
+      toast({ 
+        title: 'Ошибка', 
+        description: 'Не удалось обновить расписание',
+        variant: 'destructive'
+      });
+    }
   };
 
   const filteredBookings = bookings.filter(b => 
@@ -301,7 +336,7 @@ const AdminPanel = () => {
                             <Button 
                               size="sm" 
                               className="flex-1 bg-green-500 hover:bg-green-600"
-                              onClick={() => updateBookingStatus(booking.id, 'confirmed')}
+                              onClick={() => handleUpdateBookingStatus(booking.id, 'confirmed')}
                             >
                               <Icon name="Check" className="mr-1" size={16} />
                               Подтвердить
@@ -310,7 +345,7 @@ const AdminPanel = () => {
                               size="sm" 
                               variant="destructive" 
                               className="flex-1"
-                              onClick={() => updateBookingStatus(booking.id, 'cancelled')}
+                              onClick={() => handleUpdateBookingStatus(booking.id, 'cancelled')}
                             >
                               <Icon name="X" className="mr-1" size={16} />
                               Отменить

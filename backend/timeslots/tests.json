@@ -1,0 +1,14 @@
+{
+  "tests": [
+    {
+      "name": "Get all time slots",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "slots": "array"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
