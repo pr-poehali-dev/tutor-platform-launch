@@ -437,8 +437,8 @@ const Index = () => {
                 <CardTitle>Телефон</CardTitle>
               </CardHeader>
               <CardContent className="text-center">
-                <a href="tel:+79991234567" className="text-primary hover:underline text-lg">
-                  +7 (999) 123-45-67
+                <a href="tel:+79274049162" className="text-primary hover:underline text-lg">
+                  +7 (927) 404-91-62
                 </a>
               </CardContent>
             </Card>
