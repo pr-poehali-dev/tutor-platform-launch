@@ -17,7 +17,7 @@ const AdminLogin = () => {
     setIsLoading(true);
 
     setTimeout(() => {
-      if (credentials.email === 'admin@tutorpro.ru' && credentials.password === 'admin123') {
+      if (credentials.email === 'admin@paideia.ru' && credentials.password === 'admin123') {
         localStorage.setItem('tutorAuth', 'true');
         toast({ title: 'Вход выполнен', description: 'Добро пожаловать!' });
         navigate('/admin');
@@ -62,7 +62,7 @@ const AdminLogin = () => {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="admin@tutorpro.ru"
+                  placeholder="admin@paideia.ru"
                   className="pl-10"
                   value={credentials.email}
                   onChange={(e) => setCredentials({ ...credentials, email: e.target.value })}
@@ -118,7 +118,7 @@ const AdminLogin = () => {
 
           <div className="mt-6 p-4 bg-muted/50 rounded-lg text-sm text-muted-foreground">
             <p className="font-semibold mb-1">Демо-доступ:</p>
-            <p>Email: admin@tutorpro.ru</p>
+            <p>Email: admin@paideia.ru</p>
             <p>Пароль: admin123</p>
           </div>
         </CardContent>

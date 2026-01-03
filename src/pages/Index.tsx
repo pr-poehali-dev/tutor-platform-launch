@@ -41,7 +41,7 @@ const Index = () => {
       <header className="container mx-auto px-4 py-6">
         <nav className="flex justify-between items-center">
           <div className="text-3xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-            TutorPro
+            Paideia
           </div>
           <div className="flex gap-6 items-center">
             <a href="#tariffs" className="font-medium hover:text-primary transition-colors">Тарифы</a>
@@ -462,7 +462,7 @@ const Index = () => {
 
       <footer className="bg-gradient-to-r from-primary via-secondary to-accent text-white py-12 mt-20">
         <div className="container mx-auto px-4 text-center">
-          <div className="text-3xl font-bold mb-4">TutorPro</div>
+          <div className="text-3xl font-bold mb-4">Paideia</div>
           <p className="text-white/80 mb-4">Ваш путь к знаниям начинается здесь</p>
           <div className="flex justify-center gap-6 mb-6">
             <a href="#" className="hover:text-white/80 transition-colors">
@@ -475,7 +475,7 @@ const Index = () => {
               <Icon name="Youtube" size={24} />
             </a>
           </div>
-          <p className="text-white/60 text-sm">© 2026 TutorPro. Все права защищены.</p>
+          <p className="text-white/60 text-sm">© 2026 Paideia. Все права защищены.</p>
         </div>
       </footer>
     </div>
